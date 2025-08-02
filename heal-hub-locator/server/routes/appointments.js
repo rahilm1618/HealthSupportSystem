@@ -1,0 +1,150 @@
+
+const express = require('express');
+const { ObjectId } = require('mongodb');
+const router = express.Router();
+
+// Auth middleware import
+const auth = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'healthhub-secret-key');
+    const db = req.app.locals.db;
+    const user = await db.collection('users').findOne({ _id: new ObjectId(decoded.id) });
+    
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+    
+    req.user = user;
+    req.userId = user._id;
+    next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    res.status(401).json({ message: 'Authentication failed' });
+  }
+};
+
+// Get all appointments for a user
+router.get('/', auth, async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const appointments = await db.collection('appointments')
+      .find({ user_id: new ObjectId(req.userId) })
+      .sort({ appointment_date: -1 })
+      .toArray();
+    
+    // Get doctor and hospital details for each appointment
+    const populatedAppointments = await Promise.all(appointments.map(async (appointment) => {
+      const doctor = await db.collection('doctors').findOne({ _id: new ObjectId(appointment.doctor_id) });
+      const hospital = await db.collection('hospitals').findOne({ _id: new ObjectId(appointment.hospital_id) });
+      
+      return {
+        id: appointment._id.toString(),
+        doctorId: appointment.doctor_id.toString(),
+        hospitalId: appointment.hospital_id.toString(),
+        userId: appointment.user_id.toString(),
+        date: appointment.appointment_date,
+        time: appointment.appointment_time,
+        status: appointment.status,
+        reason: appointment.reason || '',
+        doctorName: doctor ? doctor.name : 'Unknown Doctor',
+        doctorSpeciality: doctor ? doctor.speciality : '',
+        hospitalName: hospital ? hospital.name : 'Unknown Hospital',
+        createdAt: appointment.created_at
+      };
+    }));
+    
+    res.json(populatedAppointments);
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Book a new appointment
+router.post('/', auth, async (req, res) => {
+  try {
+    const { doctorId, hospitalId, date, time, reason } = req.body;
+    
+    if (!doctorId || !hospitalId || !date || !time) {
+      return res.status(400).json({ message: 'Please provide all required fields' });
+    }
+    
+    const db = req.app.locals.db;
+    
+    // Verify doctor and hospital exist
+    const doctor = await db.collection('doctors').findOne({ _id: new ObjectId(doctorId) });
+    const hospital = await db.collection('hospitals').findOne({ _id: new ObjectId(hospitalId) });
+    
+    if (!doctor || !hospital) {
+      return res.status(404).json({ message: 'Doctor or hospital not found' });
+    }
+    
+    // Create new appointment
+    const newAppointment = {
+      user_id: new ObjectId(req.userId),
+      doctor_id: new ObjectId(doctorId),
+      hospital_id: new ObjectId(hospitalId),
+      appointment_date: date,
+      appointment_time: time,
+      reason: reason || '',
+      status: 'scheduled',
+      created_at: new Date(),
+      updated_at: new Date()
+    };
+    
+    const result = await db.collection('appointments').insertOne(newAppointment);
+    
+    res.status(201).json({
+      id: result.insertedId,
+      doctorId,
+      hospitalId,
+      userId: req.userId.toString(),
+      date,
+      time,
+      reason: reason || '',
+      status: 'scheduled',
+      doctorName: doctor.name,
+      doctorSpeciality: doctor.speciality,
+      hospitalName: hospital.name,
+      createdAt: newAppointment.created_at
+    });
+  } catch (error) {
+    console.error('Error booking appointment:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Cancel an appointment
+router.patch('/:id/cancel', auth, async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const appointment = await db.collection('appointments').findOne({ 
+      _id: new ObjectId(req.params.id),
+      user_id: new ObjectId(req.userId)
+    });
+    
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+    
+    // Update appointment status
+    await db.collection('appointments').updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { $set: { status: 'cancelled', updated_at: new Date() } }
+    );
+    
+    res.json({ message: 'Appointment cancelled successfully' });
+  } catch (error) {
+    console.error('Error cancelling appointment:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+module.exports = router;
