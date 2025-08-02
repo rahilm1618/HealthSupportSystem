@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dummy training data (replace with real Kaggle data for production)
+# Dummy training data 
 # Features: age, gender (0=male, 1=female), bmi, bloodPressure, cholesterol, glucose
 X = np.array([
     [45, 0, 25, 120, 200, 90],

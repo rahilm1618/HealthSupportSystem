@@ -1,9 +1,40 @@
 
 const express = require('express');
+const router = express.Router();
 const { ObjectId } = require('mongodb');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const router = express.Router();
+
+// Clerk user sync (upsert by Clerk userId/email)
+router.post('/clerk-sync', async (req, res) => {
+  try {
+    const { userId, email, name } = req.body;
+    if (!userId || !email) {
+      return res.status(400).json({ message: 'userId and email are required' });
+    }
+    const db = req.app.locals.db;
+    const update = {
+      $set: {
+        email,
+        name: name || '',
+        updated_at: new Date(),
+      },
+      $setOnInsert: {
+        clerkUserId: userId,
+        created_at: new Date(),
+      }
+    };
+    const result = await db.collection('users').updateOne(
+      { clerkUserId: userId },
+      update,
+      { upsert: true }
+    );
+    res.json({ ok: true, upserted: result.upsertedId });
+  } catch (error) {
+    console.error('Clerk sync error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Middleware to verify JWT
 const auth = async (req, res, next) => {

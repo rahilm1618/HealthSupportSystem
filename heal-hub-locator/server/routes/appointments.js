@@ -30,25 +30,25 @@ const auth = async (req, res, next) => {
   }
 };
 
-// Get all appointments for a user
-router.get('/', auth, async (req, res) => {
+// Get all appointments for a user (by Clerk userId string)
+router.get('/', async (req, res) => {
   try {
     const db = req.app.locals.db;
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ message: 'userId required' });
     const appointments = await db.collection('appointments')
-      .find({ user_id: new ObjectId(req.userId) })
+      .find({ user_id: userId })
       .sort({ appointment_date: -1 })
       .toArray();
-    
     // Get doctor and hospital details for each appointment
     const populatedAppointments = await Promise.all(appointments.map(async (appointment) => {
       const doctor = await db.collection('doctors').findOne({ _id: new ObjectId(appointment.doctor_id) });
       const hospital = await db.collection('hospitals').findOne({ _id: new ObjectId(appointment.hospital_id) });
-      
       return {
         id: appointment._id.toString(),
         doctorId: appointment.doctor_id.toString(),
         hospitalId: appointment.hospital_id.toString(),
-        userId: appointment.user_id.toString(),
+        userId: appointment.user_id,
         date: appointment.appointment_date,
         time: appointment.appointment_time,
         status: appointment.status,
@@ -59,7 +59,6 @@ router.get('/', auth, async (req, res) => {
         createdAt: appointment.created_at
       };
     }));
-    
     res.json(populatedAppointments);
   } catch (error) {
     console.error('Error fetching appointments:', error);
@@ -67,28 +66,23 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Book a new appointment
-router.post('/', auth, async (req, res) => {
+// Book a new appointment (by Clerk userId string)
+router.post('/', async (req, res) => {
   try {
-    const { doctorId, hospitalId, date, time, reason } = req.body;
-    
-    if (!doctorId || !hospitalId || !date || !time) {
+    const { doctorId, hospitalId, date, time, reason, userId } = req.body;
+    if (!doctorId || !hospitalId || !date || !time || !userId) {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
-    
     const db = req.app.locals.db;
-    
     // Verify doctor and hospital exist
     const doctor = await db.collection('doctors').findOne({ _id: new ObjectId(doctorId) });
     const hospital = await db.collection('hospitals').findOne({ _id: new ObjectId(hospitalId) });
-    
     if (!doctor || !hospital) {
       return res.status(404).json({ message: 'Doctor or hospital not found' });
     }
-    
     // Create new appointment
     const newAppointment = {
-      user_id: new ObjectId(req.userId),
+      user_id: userId,
       doctor_id: new ObjectId(doctorId),
       hospital_id: new ObjectId(hospitalId),
       appointment_date: date,
@@ -98,14 +92,12 @@ router.post('/', auth, async (req, res) => {
       created_at: new Date(),
       updated_at: new Date()
     };
-    
     const result = await db.collection('appointments').insertOne(newAppointment);
-    
     res.status(201).json({
       id: result.insertedId,
       doctorId,
       hospitalId,
-      userId: req.userId.toString(),
+      userId,
       date,
       time,
       reason: reason || '',
@@ -125,21 +117,21 @@ router.post('/', auth, async (req, res) => {
 router.patch('/:id/cancel', auth, async (req, res) => {
   try {
     const db = req.app.locals.db;
+    // Support Clerk userId (string) and legacy ObjectId
     const appointment = await db.collection('appointments').findOne({ 
       _id: new ObjectId(req.params.id),
-      user_id: new ObjectId(req.userId)
+      $or: [
+        { user_id: req.userId },
+        { user_id: req.user?.clerkUserId }
+      ]
     });
-    
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found' });
     }
-    
-    // Update appointment status
     await db.collection('appointments').updateOne(
       { _id: new ObjectId(req.params.id) },
       { $set: { status: 'cancelled', updated_at: new Date() } }
     );
-    
     res.json({ message: 'Appointment cancelled successfully' });
   } catch (error) {
     console.error('Error cancelling appointment:', error);

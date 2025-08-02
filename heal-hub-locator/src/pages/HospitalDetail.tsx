@@ -106,7 +106,7 @@ const HospitalDetail = () => {
     : [...new Set(doctors.map(d => d.speciality))].map(s => `${s} Department`);
 
   // Use default image if not provided
-  const imageUrl = hospital.image || `https://source.unsplash.com/random/1280x720/?hospital&sig=${hospital.id}`;
+  const imageUrl = hospital.image_url
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -126,18 +126,15 @@ const HospitalDetail = () => {
           
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
             <div className="container mx-auto">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button  
                 className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 mb-4"
                 asChild
-              >
+              />
                 <Link to="/hospitals">
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Back to Hospitals
                 </Link>
-              </Button>
-              
+              {/* No extra code needed here, just remove $SELECTION_PLACEHOLDER$ */}  
               <div className="flex justify-between items-start">
                 <div>
                   <Badge className="mb-2 bg-health-primary">
@@ -230,8 +227,7 @@ const HospitalDetail = () => {
                       
                       {doctors.length > 2 && (
                         <Button 
-                          variant="link" 
-                          className="mt-2 text-health-primary p-0"
+                          className="mt-2 text-health-primary p-0 bg-secondary hover:bg-secondary/80"
                           onClick={() => setActiveTab('doctors')}
                         >
                           View all {doctors.length} doctors
@@ -292,7 +288,7 @@ const HospitalDetail = () => {
                           
                           <Button
                             className="w-full"
-                            onClick={handleBookAppointment}
+                            onClick={() => navigate(`/book-appointment?hospital=${hospital.id}`)}
                           >
                             Book Appointment
                           </Button>
