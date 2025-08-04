@@ -29,7 +29,8 @@ export const transformMongoHospital = (mongoHospital: MongoHospital): Hospital =
     type: 'Hospital', // Default type if not provided
     emergency_services: mongoHospital.emergency_services || false,
     facilities: mongoHospital.facilities || [], // Default empty facilities if not provided
-    image: mongoHospital.image || `https://source.unsplash.com/featured/?hospital,medical,building&sig=${id}`
+    image: mongoHospital.image_url || undefined,
+    image_url: mongoHospital.image_url || undefined
   };
 
   // Only add rating if it exists in the MongoDB document
@@ -80,9 +81,8 @@ export const transformMongoDoctor = (mongoDoctor: MongoDoctor): Doctor => {
     }
   }
   
-  // Use Unsplash for real doctor images with medical/doctor as the query
-  const imageUrl = mongoDoctor.image || 
-    `https://source.unsplash.com/featured/?doctor,medical,physician&sig=${id}`;
+  // Use a common doctor image for all doctors
+  const imageUrl = "/doctor.png";
   
   return {
     id: id,

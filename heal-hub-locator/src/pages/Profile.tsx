@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CalendarIcon, UserIcon, LogOutIcon, ClockIcon, HospitalIcon, Activity } from "lucide-react";
+import { getHospitalById } from '@/services/api';
 import { useToast } from "@/hooks/use-toast";
 
 interface Appointment {
@@ -44,13 +45,30 @@ const Profile = () => {
   // Fetch user appointments
   const [appointments, setAppointments] = React.useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const fetchAppointments = React.useCallback(() => {
+  const [hospitalImages, setHospitalImages] = React.useState<{[hospitalId: string]: string}>({});
+  const fetchAppointments = React.useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
-    axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/appointments?userId=${user.id}`)
-      .then(res => setAppointments(res.data))
-      .catch(() => setAppointments([]))
-      .finally(() => setIsLoading(false));
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/appointments?userId=${user.id}`);
+      setAppointments(res.data);
+      // Fetch hospital images for each appointment
+      const hospitalIds: string[] = Array.from(new Set(res.data.map((app: Appointment) => String(app.hospitalId))));
+      const images: {[hospitalId: string]: string} = {};
+      await Promise.all(hospitalIds.map(async (id: string) => {
+        try {
+          const hospital = await getHospitalById(id);
+          images[id] = hospital.image || hospital.image_url || '';
+        } catch {
+          images[id] = '';
+        }
+      }));
+      setHospitalImages(images);
+    } catch {
+      setAppointments([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, [user]);
   React.useEffect(() => {
     fetchAppointments();
@@ -181,6 +199,9 @@ const Profile = () => {
                                   </div>
                                   <div className="flex items-center text-muted-foreground">
                                     <HospitalIcon className="h-4 w-4 mr-2" />
+                                    {hospitalImages[appointment.hospitalId] && (
+                                      <img src={hospitalImages[appointment.hospitalId]} alt={appointment.hospitalName} className="h-8 w-8 object-cover rounded mr-2" />
+                                    )}
                                     {appointment.hospitalName}
                                   </div>
                                   <div className="flex items-center text-muted-foreground">
@@ -234,6 +255,9 @@ const Profile = () => {
                                   </div>
                                   <div className="flex items-center text-muted-foreground">
                                     <HospitalIcon className="h-4 w-4 mr-2" />
+                                    {hospitalImages[appointment.hospitalId] && (
+                                      <img src={hospitalImages[appointment.hospitalId]} alt={appointment.hospitalName} className="h-8 w-8 object-cover rounded mr-2" />
+                                    )}
                                     {appointment.hospitalName}
                                   </div>
                                   <div className="flex items-center text-muted-foreground">
