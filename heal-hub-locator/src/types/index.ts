@@ -58,6 +58,7 @@ export interface MongoHospital {
   emergency_services?: boolean;
   facilities?: string[];
   image?: string;
+  image_url?: string;
   latitude?: number;
   longitude?: number;
   rating?: number;
