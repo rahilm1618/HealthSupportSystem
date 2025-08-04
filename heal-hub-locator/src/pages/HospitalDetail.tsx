@@ -105,8 +105,8 @@ const HospitalDetail = () => {
     ? hospital.facilities 
     : [...new Set(doctors.map(d => d.speciality))].map(s => `${s} Department`);
 
-  // Use default image if not provided
-  const imageUrl = hospital.image_url
+  // Use hospital.image everywhere, fallback to placeholder
+  const imageUrl = hospital.image || "https://via.placeholder.com/600x300?text=No+Image";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -120,6 +120,11 @@ const HospitalDetail = () => {
               src={imageUrl}
               alt={hospital.name}
               className="w-full h-full object-cover"
+              onError={e => {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.src = "https://via.placeholder.com/600x300?text=No+Image";
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
           </div>

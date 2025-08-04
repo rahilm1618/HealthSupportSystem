@@ -15,8 +15,8 @@ const HospitalCard = ({ hospital }: HospitalCardProps) => {
   // Generate hospital type if not provided
   const hospitalType = hospital.type || "General Hospital";
 
-  // Use hospital.image, fallback to hospital.image_url
-  const imageSrc = hospital.image || hospital.image_url;
+  // Use only hospital.image for image source, fallback to placeholder
+  const imageSrc = hospital.image || "/no-image.png";
   console.log(imageSrc)
   return (
     <Card className="h-full overflow-hidden hover:shadow-md transition-shadow duration-200">
@@ -27,7 +27,8 @@ const HospitalCard = ({ hospital }: HospitalCardProps) => {
           className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
-            target.onerror = null; // Prevent infinite error loop
+            target.onerror = null;
+            target.src = "/no-image.png";
           }}
         />
         {hospital.emergency_services && (
