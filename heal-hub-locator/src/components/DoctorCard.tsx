@@ -14,19 +14,21 @@ interface DoctorCardProps {
 
 const DoctorCard = ({ doctor, hospitalName }: DoctorCardProps) => {
   const navigate = useNavigate();
-  // Using Unsplash for real doctor images
-  const imageUrl = doctor.image ||
-    `https://source.unsplash.com/featured/300x300/?doctor&sig=${doctor.id}`;
+  // Always use the same image for every doctor
+  const imageUrl = '/06b185e5b2322f1ab0557db59b554cd5.jpg'; 
 
   return (
     <Card className="h-full overflow-hidden hover:shadow-md transition-shadow duration-200">
       <div className="flex flex-col md:flex-row">
-        <div className="md:w-1/3 h-full">
-          <div className="relative h-48 md:h-full overflow-hidden">
+        <div className="md:w-1/3 h-full flex items-center justify-center">
+          <div className="relative h-48 md:h-full overflow-hidden flex items-center justify-center" style={{ minHeight: '100%' }}>
             <img
               src={imageUrl}
               alt={doctor.name}
-              className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
+              width={160}
+              height={160}
+              className=" mt-11 object-cover rounded-lg transition-transform hover:scale-105 duration-300"
+              style={{ width: '160px', height: '160px' }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.onerror = null; // Prevent infinite error loop
