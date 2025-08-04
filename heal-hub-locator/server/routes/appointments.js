@@ -3,32 +3,8 @@ const express = require('express');
 const { ObjectId } = require('mongodb');
 const router = express.Router();
 
-// Auth middleware import
-const auth = async (req, res, next) => {
-  try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return res.status(401).json({ message: 'Authentication required' });
-    }
-    
-    const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'healthhub-secret-key');
-    const db = req.app.locals.db;
-    const user = await db.collection('users').findOne({ _id: new ObjectId(decoded.id) });
-    
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
-    }
-    
-    req.user = user;
-    req.userId = user._id;
-    next();
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-    res.status(401).json({ message: 'Authentication failed' });
-  }
-};
+// Clerk JWT Auth middleware import
+const clerkAuth = require('../utils/clerkAuth');
 
 // Get all appointments for a user (by Clerk userId string)
 router.get('/', async (req, res) => {
@@ -114,7 +90,7 @@ router.post('/', async (req, res) => {
 });
 
 // Cancel an appointment
-router.patch('/:id/cancel', auth, async (req, res) => {
+router.patch('/:id/cancel', clerkAuth, async (req, res) => {
   try {
     const db = req.app.locals.db;
     // Support Clerk userId (string) and legacy ObjectId

@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 // import { useQuery } from "@tanstack/react-query";
@@ -31,7 +30,7 @@ interface Appointment {
 
 const Profile = () => {
   const { user, isSignedIn } = useUser();
-  const { signOut } = useAuth();
+  const { signOut, getToken } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -60,7 +59,16 @@ const Profile = () => {
   // Cancel appointment
   const cancelAppointment = async (id: string) => {
     try {
-      await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/appointments/${id}/cancel`);
+      const token = await getToken();
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/appointments/${id}/cancel`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       toast({
         title: "Appointment cancelled",
         description: "Your appointment has been cancelled successfully.",
@@ -84,6 +92,10 @@ const Profile = () => {
     (app) => app.status === "completed" || new Date(app.date) < new Date()
   ) || [];
   
+  const cancelledAppointments = appointments?.filter(
+    (app) => app.status === "cancelled"
+  ) || [];
+
   // Removed cancelled appointments tab
 
   if (!user) return null;
@@ -137,7 +149,9 @@ const Profile = () => {
                     <TabsTrigger value="past">
                       Past ({pastAppointments.length})
                     </TabsTrigger>
-
+                    <TabsTrigger value="cancelled">
+                      Cancelled ({cancelledAppointments.length})
+                    </TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="upcoming">
@@ -228,6 +242,52 @@ const Profile = () => {
                                     <ClockIcon className="h-4 w-4 ml-4 mr-2" />
                                     {appointment.time}
                                   </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="cancelled">
+                    {isLoading ? (
+                      <div className="text-center py-8">Loading appointments...</div>
+                    ) : cancelledAppointments.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <CalendarIcon className="mx-auto h-12 w-12 opacity-30 mb-2" />
+                        <p>You don't have any cancelled appointments.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {cancelledAppointments.map((appointment) => (
+                          <Card key={appointment.id}>
+                            <CardContent className="p-4">
+                              <div className="flex flex-col md:flex-row justify-between">
+                                <div className="space-y-2">
+                                  <div className="flex items-center">
+                                    <Activity className="h-5 w-5 text-primary mr-2" />
+                                    <span className="font-medium line-through text-gray-400">{appointment.doctorName}</span>
+                                    <Badge variant="destructive">
+                                      Cancelled
+                                    </Badge>
+                                  </div>
+                                  <div className="flex items-center text-muted-foreground">
+                                    <HospitalIcon className="h-4 w-4 mr-2" />
+                                    {appointment.hospitalName}
+                                  </div>
+                                  <div className="flex items-center text-muted-foreground">
+                                    <CalendarIcon className="h-4 w-4 mr-2" />
+                                    {format(new Date(appointment.date), "MMMM d, yyyy")}
+                                    <ClockIcon className="h-4 w-4 ml-4 mr-2" />
+                                    {appointment.time}
+                                  </div>
+                                  {appointment.reason && (
+                                    <p className="text-sm mt-2">
+                                      <span className="font-medium">Reason:</span> {appointment.reason}
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                             </CardContent>
