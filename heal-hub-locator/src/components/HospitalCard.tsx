@@ -15,9 +15,10 @@ const HospitalCard = ({ hospital }: HospitalCardProps) => {
   // Generate hospital type if not provided
   const hospitalType = hospital.type || "General Hospital";
 
-  // Use only hospital.image for image source, fallback to placeholder
-  const imageSrc = hospital.image || "/no-image.png";
-  console.log(imageSrc)
+  // Use hospital.image_url (Cloudinary) as primary image source, fallback to /no-image.png
+  
+  const imageSrc = hospital.image_url || hospital.image
+  
   return (
     <Card className="h-full overflow-hidden hover:shadow-md transition-shadow duration-200">
       <div className="relative h-44 overflow-hidden">

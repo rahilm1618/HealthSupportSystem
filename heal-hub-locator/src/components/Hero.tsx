@@ -34,7 +34,8 @@ const Hero = () => {
     <div className="relative pt-16 pb-20 md:pt-20 md:pb-28 lg:pt-32 lg:pb-36">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-health-light to-blue-50 opacity-70"></div>
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center opacity-10"></div>
+        {/* Removed Unsplash background image for privacy and consistency */}
+        <div className="absolute inset-0 bg-gray-200 bg-cover bg-center opacity-10"></div>
       </div>
       
       <div className="relative container mx-auto px-4">

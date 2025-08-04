@@ -31,8 +31,8 @@ const DoctorCard = ({ doctor, hospitalName }: DoctorCardProps) => {
               style={{ width: '160px', height: '160px' }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.onerror = null; // Prevent infinite error loop
-                target.src = `https://source.unsplash.com/featured/300x300/?physician&sig=${doctor.id}`;
+                target.onerror = null;
+                target.src = "/doctor.png";
               }}
             />
           </div>

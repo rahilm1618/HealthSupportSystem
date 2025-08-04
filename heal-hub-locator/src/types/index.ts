@@ -25,6 +25,7 @@ export interface Doctor {
   rating?: number;
   hospitalId: string;
   image?: string;
+  image_url?: string;
   availability?: string[];
   contact: string;
   location: string;
@@ -81,6 +82,7 @@ export interface MongoDoctor {
     $numberDouble: string;
   };
   image?: string;
+  image_url?: string;
 }
 
 export interface MongoSymptom {
