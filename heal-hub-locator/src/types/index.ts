@@ -11,6 +11,7 @@ export interface Hospital {
   type?: string;
   rating?: number;
   image?: string;
+  image_url?: string;
   latitude?: number;
   longitude?: number;
   facilities?: string[];

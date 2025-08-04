@@ -18,8 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Realistic synthetic training data (age, gender, bmi, bloodPressure, cholesterol, glucose)
+# Dummy training data 
+# Features: age, gender (0=male, 1=female), bmi, bloodPressure, cholesterol, glucose
 X = np.array([
     [25, 0, 22.0, 110, 170, 85], [30, 1, 24.5, 115, 180, 90], [35, 0, 26.0, 120, 190, 95], [40, 1, 28.0, 125, 200, 100],
     [45, 0, 30.0, 130, 210, 105], [50, 1, 32.0, 135, 220, 110], [55, 0, 34.0, 140, 230, 115], [60, 1, 36.0, 145, 240, 120],

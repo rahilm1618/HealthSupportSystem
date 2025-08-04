@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown, LogIn, UserCircle } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUser, useAuth } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,7 +18,8 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useMobile();
   const location = useLocation();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isSignedIn, user } = useUser();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
 
   // Close mobile menu when route changes
@@ -27,14 +28,14 @@ const Header = () => {
   }, [location.pathname]);
 
   const handleSignInClick = () => {
-    navigate('/login');
+    navigate('/sign-in');
   };
 
   const handleBookAppointmentClick = () => {
-    if (isAuthenticated) {
+    if (isSignedIn) {
       navigate('/book-appointment');
     } else {
-      navigate('/login');
+      navigate('/sign-in');
     }
   };
 
@@ -69,12 +70,12 @@ const Header = () => {
             </Link>
             <EmergencyButton />
             
-            {isAuthenticated ? (
+            {isSignedIn ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
+                  <Button className="flex items-center gap-2">
                     <UserCircle size={18} />
-                    {user?.name}
+                    {user?.fullName}
                     <ChevronDown size={16} />
                   </Button>
                 </DropdownMenuTrigger>
@@ -86,14 +87,12 @@ const Header = () => {
                     Book Appointment
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout}>
-                    Logout
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => signOut()}>Logout</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-3">
-                <Button variant="outline" onClick={handleSignInClick}>
+                <Button onClick={handleSignInClick}>
                   <LogIn className="mr-2 h-4 w-4" />
                   Sign In
                 </Button>
@@ -154,23 +153,23 @@ const Header = () => {
             </Link>
 
             <div className="pt-2 border-t border-gray-100">
-              <EmergencyButton className="w-full justify-center mb-3" />
+              <EmergencyButton />
               
-              {isAuthenticated ? (
+              {isSignedIn ? (
                 <div className="space-y-2">
-                  <Button variant="outline" className="w-full justify-between" onClick={() => navigate('/profile')}>
+                  <Button className="w-full justify-between" onClick={() => navigate('/profile')}>
                     My Profile <UserCircle size={16} />
                   </Button>
                   <Button className="w-full" onClick={() => navigate('/book-appointment')}>
                     Book Appointment
                   </Button>
-                  <Button variant="ghost" className="w-full" onClick={logout}>
+                  <Button className="w-full" onClick={() => signOut()}>
                     Logout
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Button variant="outline" className="w-full" onClick={handleSignInClick}>
+                  <Button className="w-full" onClick={handleSignInClick}>
                     <LogIn className="mr-2 h-4 w-4" />
                     Sign In
                   </Button>

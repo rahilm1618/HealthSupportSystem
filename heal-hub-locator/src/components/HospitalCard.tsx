@@ -11,23 +11,23 @@ interface HospitalCardProps {
 }
 
 const HospitalCard = ({ hospital }: HospitalCardProps) => {
-  // Use high-quality images from Unsplash with a specific query for hospitals
-  const imageUrl = hospital.image || `https://source.unsplash.com/featured/?hospital,medical,building&sig=${hospital.id}`;
   
   // Generate hospital type if not provided
   const hospitalType = hospital.type || "General Hospital";
-  
+
+  // Use hospital.image, fallback to hospital.image_url
+  const imageSrc = hospital.image || hospital.image_url;
+  console.log(imageSrc)
   return (
     <Card className="h-full overflow-hidden hover:shadow-md transition-shadow duration-200">
       <div className="relative h-44 overflow-hidden">
         <img 
-          src={imageUrl} 
+          src={imageSrc}
           alt={hospital.name} 
           className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.onerror = null; // Prevent infinite error loop
-            target.src = `https://source.unsplash.com/featured/?clinic,medical&sig=${hospital.id}`;
           }}
         />
         {hospital.emergency_services && (
@@ -48,7 +48,7 @@ const HospitalCard = ({ hospital }: HospitalCardProps) => {
           )}
         </div>
         
-        <Badge variant="outline" className="mb-3">
+        <Badge className="mb-3">
           {hospitalType}
         </Badge>
         
@@ -79,12 +79,12 @@ const HospitalCard = ({ hospital }: HospitalCardProps) => {
           <div className="mt-3">
             <div className="flex flex-wrap gap-1">
               {hospital.facilities.slice(0, 3).map((facility, index) => (
-                <Badge key={index} variant="secondary" className="bg-health-light text-health-primary hover:bg-blue-100">
+                <Badge key={index} className="bg-health-light text-health-primary hover:bg-blue-100">
                   {facility}
                 </Badge>
               ))}
               {hospital.facilities.length > 3 && (
-                <Badge variant="secondary" className="bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-200">
                   +{hospital.facilities.length - 3} more
                 </Badge>
               )}
@@ -95,15 +95,14 @@ const HospitalCard = ({ hospital }: HospitalCardProps) => {
       
       <CardFooter className="pt-0">
         <div className="w-full flex justify-between items-center">
-          <Button asChild variant="ghost" size="sm" className="text-health-primary hover:text-health-secondary hover:bg-health-light">
+          <Button asChild className="text-health-primary hover:text-health-secondary hover:bg-health-light">
             <Link to={`/hospitals/${hospital.id}`}>
               View Details
             </Link>
           </Button>
           
           <Button 
-            variant="outline" 
-            size="sm" 
+            type="button"
             className="text-health-primary border-health-primary hover:bg-health-light"
             onClick={() => {
               const url = hospital.latitude && hospital.longitude

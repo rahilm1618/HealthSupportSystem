@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+// import { useQuery, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from '@clerk/clerk-react';
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,13 +39,18 @@ const formSchema = z.object({
 });
 
 const BookAppointment = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isSignedIn } = useUser();
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  const [searchParams] = useSearchParams();
+  const prefillHospital = searchParams.get('hospital') || undefined;
+  const prefillDoctor = searchParams.get('doctor') || undefined;
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      hospitalId: prefillHospital,
+      doctorId: prefillDoctor,
       reason: ""
     }
   });
@@ -55,43 +60,46 @@ const BookAppointment = () => {
   
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isSignedIn) {
       toast({
         title: "Authentication required",
         description: "Please sign in to book an appointment",
         variant: "destructive"
       });
-      navigate("/login");
+      navigate("/sign-in");
     }
-  }, [isAuthenticated, navigate, toast]);
+  }, [isSignedIn, navigate, toast]);
 
   // Fetch hospitals
-  const { data: hospitals, isLoading: hospitalsLoading } = useQuery({
-    queryKey: ["hospitals"],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/hospitals`
-      );
-      return response.data as Hospital[];
-    },
-  });
+  const [hospitals, setHospitals] = useState<Hospital[]>([]);
+  const [hospitalsLoading, setHospitalsLoading] = useState(true);
+  useEffect(() => {
+    setHospitalsLoading(true);
+    axios.get(`http://localhost:5000/api/hospitals`)
+      .then(res => setHospitals(res.data))
+      .catch(() => setHospitals([]))
+      .finally(() => setHospitalsLoading(false));
+  }, []);
 
   // Fetch doctors based on selected hospital
-  const { data: doctors, isLoading: doctorsLoading } = useQuery({
-    queryKey: ["doctors", selectedHospital],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/doctors/hospital/${selectedHospital}`
-      );
-      return response.data as Doctor[];
-    },
-    enabled: !!selectedHospital,
-  });
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(false);
+  useEffect(() => {
+    if (!selectedHospital) return;
+    setDoctorsLoading(true);
+    axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/doctors/hospital/${selectedHospital}`)
+      .then(res => setDoctors(res.data))
+      .catch(() => setDoctors([]))
+      .finally(() => setDoctorsLoading(false));
+  }, [selectedHospital]);
 
-  // Create appointment mutation
-  const createAppointment = useMutation({
-    mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const response = await axios.post(
+  // Create appointment
+  const [isBooking, setIsBooking] = useState(false);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user) return;
+    setIsBooking(true);
+    try {
+      await axios.post(
         `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/appointments`,
         {
           hospitalId: values.hospitalId,
@@ -99,31 +107,25 @@ const BookAppointment = () => {
           date: format(values.date, "yyyy-MM-dd"),
           time: values.time,
           reason: values.reason || "",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user?.token}`,
-          },
+          userId: user.id,
+          userEmail: user.primaryEmailAddress?.emailAddress,
         }
       );
-      
-      return response.data;
-    },
-    onSuccess: () => {
       toast({
         title: "Appointment booked",
         description: "Your appointment has been booked successfully.",
       });
       navigate("/profile");
-    },
-    onError: (error: any) => {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to book appointment. Please try again.",
+        description: error?.message || "Failed to book appointment. Please try again.",
         variant: "destructive",
       });
-    },
-  });
+    } finally {
+      setIsBooking(false);
+    }
+  };
 
   // Generate time slots between 9AM and 5PM
   const timeSlots = Array.from({ length: 17 }, (_, i) => {
@@ -134,18 +136,16 @@ const BookAppointment = () => {
     return `${displayHour}:${minutes} ${ampm}`;
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    createAppointment.mutate(values);
-  };
+  // ...existing code...
 
-  if (!isAuthenticated) return null;
+  if (!isSignedIn) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          <Card>
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full max-w-2xl mx-auto px-4 py-12 rounded-xl shadow-lg bg-white">
+          <Card className="shadow-none rounded-none p-0 bg-transparent">
             <CardHeader>
               <CardTitle>Book an Appointment</CardTitle>
               <CardDescription>
@@ -250,8 +250,6 @@ const BookAppointment = () => {
                               <PopoverTrigger asChild>
                                 <FormControl>
                                   <Button
-                                    variant="outline"
-                                    className="w-full justify-start text-left font-normal"
                                     disabled={!form.getValues("doctorId")}
                                   >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -335,13 +333,9 @@ const BookAppointment = () => {
 
                   <Button 
                     type="submit" 
-                    className="w-full"
-                    disabled={
-                      !form.formState.isValid ||
-                      createAppointment.isPending
-                    }
+                    disabled={!form.formState.isValid || isBooking}
                   >
-                    {createAppointment.isPending ? "Booking..." : "Book Appointment"}
+                    {isBooking ? "Booking..." : "Book Appointment"}
                   </Button>
                 </form>
               </Form>
