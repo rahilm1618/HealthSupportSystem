@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Activity, Search, ChevronRight } from 'lucide-react';
 import { Symptom, Disease, Doctor, MLPrediction } from '@/types';
@@ -12,7 +11,7 @@ import DoctorCard from './DoctorCard';
 import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
 
-const SymptomTracker = () => {
+const SymptomTrackerComp = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
@@ -23,41 +22,36 @@ const SymptomTracker = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Fetch symptoms on component mount
+  // Always use mock symptoms
   useEffect(() => {
-    const fetchSymptoms = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/symptoms`
-        );
-        setSymptoms(response.data);
-      } catch (error) {
-        console.error("Error fetching symptoms:", error);
-        toast({
-          title: "Error loading symptoms",
-          description: "Could not load symptoms. Using default data instead.",
-          variant: "destructive",
-        });
-        // Fallback to mock data in case of error
-        setSymptoms([
-          { id: "1", name: "Fever", description: "Elevated body temperature" },
-          { id: "2", name: "Cough", description: "A sudden expulsion of air from the lungs" },
-          { id: "3", name: "Headache", description: "Pain in the head or upper neck" },
-          { id: "4", name: "Fatigue", description: "Extreme tiredness resulting from mental or physical exertion" },
-          { id: "5", name: "Shortness of breath", description: "Difficulty breathing or catching your breath" },
-          { id: "6", name: "Chest pain", description: "Pain or discomfort in the chest area" },
-          { id: "7", name: "Nausea", description: "Feeling of sickness with an inclination to vomit" },
-          { id: "8", name: "Abdominal pain", description: "Pain felt in the abdomen" },
-          { id: "9", name: "Diarrhea", description: "Loose, watery bowel movements" },
-          { id: "10", name: "Rash", description: "A temporary eruption on the skin" }
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSymptoms();
-  }, [toast]);
+    setSymptoms([
+      { id: "1", name: "Fever", description: "Elevated body temperature" },
+      { id: "2", name: "Cough", description: "A sudden expulsion of air from the lungs" },
+      { id: "3", name: "Headache", description: "Pain in the head or upper neck" },
+      { id: "4", name: "Fatigue", description: "Extreme tiredness resulting from mental or physical exertion" },
+      { id: "5", name: "Shortness of breath", description: "Difficulty breathing or catching your breath" },
+      { id: "6", name: "Chest pain", description: "Pain or discomfort in the chest area" },
+      { id: "7", name: "Nausea", description: "Feeling of sickness with an inclination to vomit" },
+      { id: "8", name: "Abdominal pain", description: "Pain felt in the abdomen" },
+      { id: "9", name: "Diarrhea", description: "Loose, watery bowel movements" },
+      { id: "10", name: "Rash", description: "A temporary eruption on the skin" },
+      { id: "11", name: "Joint pain", description: "Pain or discomfort in the joints" },
+      { id: "12", name: "Skin rash", description: "Red, itchy, or inflamed skin" },
+      { id: "13", name: "Eye pain", description: "Pain or discomfort in or around the eye" },
+      { id: "14", name: "Toothache", description: "Pain in or around a tooth" },
+      { id: "15", name: "Anxiety", description: "Feelings of worry, nervousness, or unease" },
+      { id: "16", name: "Diabetes symptoms", description: "Frequent urination, increased thirst, unexplained weight loss" },
+      { id: "17", name: "High blood pressure", description: "Often no symptoms, but can include headaches or dizziness" },
+      { id: "18", name: "Asthma symptoms", description: "Wheezing, shortness of breath, chest tightness" },
+      { id: "19", name: "Allergy symptoms", description: "Sneezing, itching, watery eyes, runny nose" },
+      { id: "20", name: "Ear pain", description: "Pain or discomfort in the ear" },
+      { id: "21", name: "Back pain", description: "Pain or discomfort in the back" },
+      { id: "22", name: "Cold", description: "Runny nose, sneezing, sore throat, mild fever" },
+      { id: "23", name: "Vomiting", description: "Forceful expulsion of stomach contents" },
+      { id: "24", name: "Sore throat", description: "Pain or irritation in the throat" }
+    ]);
+    setLoading(false);
+  }, []);
 
   // Filter symptoms based on search query
   const filteredSymptoms = symptoms.filter(symptom =>
@@ -265,7 +259,6 @@ const SymptomTracker = () => {
                           <div className="flex justify-between items-start">
                             <div>
                               <h4 className="font-medium text-health-primary">{prediction.disease}</h4>
-                              <p className="text-sm text-gray-600 mt-1">{prediction.description}</p>
                             </div>
                             <div className="text-right">
                               <Badge variant="outline" className="bg-health-light">
@@ -312,4 +305,4 @@ const SymptomTracker = () => {
   );
 };
 
-export default SymptomTracker;
+export default SymptomTrackerComp;

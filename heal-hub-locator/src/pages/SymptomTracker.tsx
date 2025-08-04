@@ -1,6 +1,6 @@
 
 import Header from '@/components/Header';
-import SymptomTrackerComponent from '@/components/SymptomTracker';
+import SymptomTrackerComp from '../components/SymptomTrackerComp';
 import { Activity } from 'lucide-react';
 
 const SymptomTrackerPage = () => {
@@ -20,7 +20,7 @@ const SymptomTrackerPage = () => {
             </p>
           </div>
           
-          <SymptomTrackerComponent />
+          <SymptomTrackerComp />
         </div>
       </main>
       

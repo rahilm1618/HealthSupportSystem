@@ -1,8 +1,11 @@
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+
 import numpy as np
 from sklearn.linear_model import LinearRegression
+import json
+import os
 
 app = FastAPI()
 
@@ -50,6 +53,7 @@ model = LinearRegression().fit(X, y)
 print("Model coefficients:", model.coef_)
 print("Model intercept:", model.intercept_)
 
+
 class UserData(BaseModel):
     age: int
     gender: str
@@ -57,6 +61,76 @@ class UserData(BaseModel):
     bloodPressure: float
     cholesterol: float
     glucose: float
+
+# For symptom checker
+class SymptomData(BaseModel):
+    symptoms: list[str]
+
+
+# Simple mapping of symptoms to specialties
+SYMPTOM_SPECIALTY_MAP = {
+    "fever": "General Physician Doctors",
+    "cough": "Pulmonologists Doctors",
+    "headache": "Neurology",
+    "chest pain": "Cardiologists",
+    "skin rash": "Dermatologists",
+    "joint pain": "Orthopaedic",
+    "stomach pain": "Gastroenterologists",
+    "eye pain": "Ophthalmologists",
+    "toothache": "Dentist",
+    "anxiety": "Psychiatrist",
+    "diabetes": "Endocrinologist",
+    "high blood pressure": "Cardiologists",
+    "asthma": "Pulmonologists Doctors",
+    "allergy": "Allergist",
+    "ear pain": "ENT Doctors",
+    "back pain": "Orthopaedic",
+    "cold": "General Physician Doctors",
+    "vomiting": "Gastroenterologists",
+    "diarrhea": "Gastroenterologists",
+    "sore throat": "ENT Doctors",
+}
+
+# Load doctors from pr_doctors.json
+DOCTORS_PATH = os.path.join(os.path.dirname(__file__), '..', 'pr_doctors.json')
+try:
+    with open(DOCTORS_PATH, 'r', encoding='utf-8') as f:
+        doctors_data = json.load(f)
+except Exception as e:
+    print(f"Error loading doctors data: {e}")
+    doctors_data = []
+
+
+@app.post("/recommend-doctor")
+async def recommend_doctor(data: SymptomData):
+    print("Received symptoms:", data.symptoms)
+    specialties = set()
+    for symptom in data.symptoms:
+        specialty = SYMPTOM_SPECIALTY_MAP.get(symptom.lower())
+        if specialty:
+            specialties.add(specialty)
+    if not specialties:
+        return {
+            "recommendation": "No matching specialty found. Please consult a General Physician.",
+            "specialties": [],
+            "doctors": []
+        }
+    # Find doctors matching any of the recommended specialties
+    matching_doctors = [
+        {
+            "name": d.get("name"),
+            "speciality": d.get("speciality"),
+            "contact": d.get("contact"),
+            "location": d.get("location"),
+            "doctor_rating": d.get("doctor_rating", {}).get("$numberDecimal", "")
+        }
+        for d in doctors_data if d.get("speciality") in specialties
+    ]
+    return {
+        "recommendation": f"Recommended specialties: {', '.join(specialties)}",
+        "specialties": list(specialties),
+        "doctors": matching_doctors
+    }
 
 @app.post("/predict")
 async def predict(data: UserData):
