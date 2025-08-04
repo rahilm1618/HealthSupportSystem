@@ -1,16 +1,45 @@
 
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import { Hospital} from '@/types';
 import HospitalCard from "@/components/HospitalCard";
 import DoctorCard from "@/components/DoctorCard";
 import { Button } from "@/components/ui/button";
-import { hospitals, doctors } from "@/data/mockData";
+import {doctors } from "@/data/mockData";
 import { Link } from "react-router-dom";
 import { MapPin, UserRound, Activity, ChevronRight } from "lucide-react";
+import { useState,useEffect } from "react";
+import { useToast } from '@/hooks/use-toast';
+import { getHospitals } from '@/services/api';
 
 const Index = () => {
   // Get featured hospitals and doctors
+  const [hospitals, setHospitals] = useState<Hospital[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+   useEffect(() => {
+    const fetchHospitals = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getHospitals();
+        setHospitals(data);
+        setHospitals(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching hospitals:', error);
+        toast({
+          title: "Using offline data",
+          description: "Could not connect to server. Showing locally stored hospital data.",
+          variant: "default",
+        });
+        setIsLoading(false);
+      }
+    };
+    fetchHospitals(); // Fetch all hospitals initially
+    }, []);
   const featuredHospitals = hospitals.slice(0, 3);
+  console.log('Featured Hospitals:', featuredHospitals);
   const featuredDoctors = doctors.slice(0, 4);
 
   return (

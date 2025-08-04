@@ -14,9 +14,8 @@ interface DoctorCardProps {
 
 const DoctorCard = ({ doctor, hospitalName }: DoctorCardProps) => {
   const navigate = useNavigate();
-  // Using Unsplash for real doctor images
-  const imageUrl = doctor.image ||
-    `https://source.unsplash.com/featured/300x300/?doctor&sig=${doctor.id}`;
+  // Use only doctor.image (from DB) or fallback to /doctor.png
+  const imageUrl = doctor.image || doctor.image_url || "/doctor.png";
 
   return (
     <Card className="h-full overflow-hidden hover:shadow-md transition-shadow duration-200">
@@ -29,8 +28,8 @@ const DoctorCard = ({ doctor, hospitalName }: DoctorCardProps) => {
               className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.onerror = null; // Prevent infinite error loop
-                target.src = `https://source.unsplash.com/featured/300x300/?physician&sig=${doctor.id}`;
+                target.onerror = null;
+                target.src = "/doctor.png";
               }}
             />
           </div>

@@ -81,9 +81,9 @@ export const transformMongoDoctor = (mongoDoctor: MongoDoctor): Doctor => {
     }
   }
   
-  // Use a common doctor image for all doctors
-  const imageUrl = "/doctor.png";
-  
+  // Use image_url from MongoDoctor if available, else fallback to image or default
+  const imageUrl = mongoDoctor.image_url || mongoDoctor.image || "/doctor.png";
+
   return {
     id: id,
     name: mongoDoctor.name,
@@ -92,7 +92,8 @@ export const transformMongoDoctor = (mongoDoctor: MongoDoctor): Doctor => {
     rating: rating,
     contact: mongoDoctor.contact || 'Contact not available',
     location: mongoDoctor.location || 'Location not available',
-    image: imageUrl
+    image: imageUrl,
+    image_url: mongoDoctor.image_url || undefined
   };
 };
 

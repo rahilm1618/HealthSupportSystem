@@ -32,6 +32,7 @@ const HospitalDetail = () => {
       try {
         const hospitalData = await getHospitalById(id);
         setHospital(hospitalData);
+        console.log(hospital)
         
         if (hospitalData) {
           const hospitalDoctors = await getDoctorsByHospital(hospitalData.id);
@@ -105,26 +106,20 @@ const HospitalDetail = () => {
     ? hospital.facilities 
     : [...new Set(doctors.map(d => d.speciality))].map(s => `${s} Department`);
 
-  // Use hospital.image everywhere, fallback to placeholder
-  const imageUrl = hospital.image || "https://via.placeholder.com/600x300?text=No+Image";
+  // Use hospital.image_url as primary image source, fallback to hospital.image, then /no-image.png
+  const imageUrl = hospital.image_url || hospital.image || "/no-image.png";
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       <main className="pt-20 pb-12">
-        {/* Hospital Hero */}
         <div className="relative h-64 md:h-80 overflow-hidden">
           <div className="absolute inset-0">
             <img
               src={imageUrl}
               alt={hospital.name}
               className="w-full h-full object-cover"
-              onError={e => {
-                const target = e.target as HTMLImageElement;
-                target.onerror = null;
-                target.src = "https://via.placeholder.com/600x300?text=No+Image";
-              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
           </div>
@@ -208,7 +203,7 @@ const HospitalDetail = () => {
                                 <div className="flex items-center p-4">
                                   <div className="w-16 h-16 rounded-full overflow-hidden mr-4 flex-shrink-0">
                                     <img 
-                                      src={doctor.image || `https://source.unsplash.com/random/300x300/?doctor&sig=${doctor.id}`}
+                                      src={doctor.image_url || doctor.image || "/no-image.png"}
                                       alt={doctor.name} 
                                       className="w-full h-full object-cover"
                                     />

@@ -116,7 +116,7 @@ router.get('/:id', async (req, res) => {
       type: 'Hospital', // Default type
       emergency_services: hospital.emergency_services || false,
       facilities: hospital.facilities || [], // Default empty facilities
-      image: hospital.image || `https://source.unsplash.com/featured/?hospital,medical,building&sig=${hospital._id.toString()}`,
+      image: hospital.image_url,
       latitude: hospital.latitude || 23.1815, // Default latitude for Jabalpur
       longitude: hospital.longitude || 79.9864, // Default longitude for Jabalpur
     };
