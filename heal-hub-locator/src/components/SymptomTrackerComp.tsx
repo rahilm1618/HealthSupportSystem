@@ -259,6 +259,18 @@ const SymptomTrackerComp = () => {
                           <div className="flex justify-between items-start">
                             <div>
                               <h4 className="font-medium text-health-primary">{prediction.disease}</h4>
+                              {/* Show advice if present */}
+                              {prediction.advice && (
+                                <p className="text-sm text-health-secondary mt-1">{prediction.advice}</p>
+                              )}
+                              {/* Show recommended specialties if present */}
+                              {prediction.recommendedSpecialties && prediction.recommendedSpecialties.length > 0 && (
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {prediction.recommendedSpecialties.map((spec, i) => (
+                                    <Badge key={i} className="bg-health-light text-health-primary">{spec}</Badge>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                             <div className="text-right">
                               <Badge variant="outline" className="bg-health-light">

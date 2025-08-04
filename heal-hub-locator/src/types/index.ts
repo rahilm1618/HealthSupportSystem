@@ -1,4 +1,3 @@
-
 // Hospital interfaces
 export interface Hospital {
   id: string;
@@ -106,5 +105,7 @@ export interface MongoDisease {
 export interface MLPrediction {
   disease: string;
   probability: number;
-  recommendedSpecialties: string[];
+  similarity?: number;
+  recommendedSpecialties?: string[];
+  advice?: string;
 }

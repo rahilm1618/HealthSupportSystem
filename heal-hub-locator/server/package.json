@@ -13,7 +13,9 @@
     "dotenv": "^16.4.1",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.0",
-    "mongodb": "^5.8.0"
+    "ml-matrix": "^6.12.1",
+    "mongodb": "^5.8.0",
+    "natural": "^8.1.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
