@@ -161,7 +161,7 @@ const HospitalDetail = () => {
         {/* Content */}
         <div className="container mx-auto px-4 -mt-6 relative z-10">
           <div className="bg-white rounded-t-lg shadow-sm p-6">
-            <Tabs defaultValue="overview" onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="mb-6">
                 <TabsTrigger value="overview" className="text-sm sm:text-base">
                   Overview
@@ -203,7 +203,7 @@ const HospitalDetail = () => {
                                 <div className="flex items-center p-4">
                                   <div className="w-16 h-16 rounded-full overflow-hidden mr-4 flex-shrink-0">
                                     <img 
-                                      src={doctor.image_url || doctor.image || "/no-image.png"}
+                                      src="/06b185e5b2322f1ab0557db59b554cd5.jpg"
                                       alt={doctor.name} 
                                       className="w-full h-full object-cover"
                                     />
@@ -213,7 +213,9 @@ const HospitalDetail = () => {
                                     <p className="text-sm text-gray-600">{doctor.speciality}</p>
                                     <div className="flex items-center mt-1">
                                       <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                                      <span className="text-xs ml-1">{doctor.rating.toFixed(1)}</span>
+                                      <span className="text-xs ml-1">
+                                        {doctor.rating ? doctor.rating.toFixed(1) : '4.5'}
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
