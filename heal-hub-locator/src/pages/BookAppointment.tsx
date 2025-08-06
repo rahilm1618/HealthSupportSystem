@@ -8,8 +8,6 @@ import { useUser } from '@clerk/clerk-react';
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -267,11 +265,15 @@ const BookAppointment = () => {
                                   selected={field.value}
                                   onSelect={field.onChange}
                                   disabled={(date) => {
-                                    // Disable dates in the past and weekends (Saturday and Sunday)
+                                    // Disable dates in the past, weekends, and today after 5pm
+                                    const now = new Date();
+                                    const isToday = date.toDateString() === now.toDateString();
+                                    const after5pm = now.getHours() >= 17;
                                     return (
-                                      date < new Date(new Date().setHours(0, 0, 0, 0)) ||
+                                      date < new Date(now.setHours(0, 0, 0, 0)) ||
                                       date.getDay() === 0 ||
-                                      date.getDay() === 6
+                                      date.getDay() === 6 ||
+                                      (isToday && after5pm)
                                     );
                                   }}
                                   initialFocus

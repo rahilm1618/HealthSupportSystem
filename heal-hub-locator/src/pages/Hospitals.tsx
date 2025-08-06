@@ -177,22 +177,22 @@ const Hospitals = () => {
                 <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
                   <h4 className="font-medium text-gray-800 mb-2">Understanding COVID-19 Vaccination</h4>
                   <p className="text-sm text-gray-600 mb-3">Learn about the importance of vaccination and how it helps protect against severe COVID-19.</p>
-                  <a href="#" className="text-sm font-medium text-health-primary hover:text-health-secondary">Read More →</a>
+                  <a href="https://www.mayoclinic.org/diseases-conditions/coronavirus/in-depth/different-types-of-covid-19-vaccines/art-20506465" className="text-sm font-medium text-health-primary hover:text-health-secondary">Read More →</a>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
                   <h4 className="font-medium text-gray-800 mb-2">Heart Health: Prevention is Better Than Cure</h4>
                   <p className="text-sm text-gray-600 mb-3">Discover lifestyle changes and dietary habits to maintain a healthy heart.</p>
-                  <a href="#" className="text-sm font-medium text-health-primary hover:text-health-secondary">Read More →</a>
+                  <a href="https://sloanestreetsurgery.co.uk/articles/cardiovascular-health-prevention-better-than-cure/" className="text-sm font-medium text-health-primary hover:text-health-secondary">Read More →</a>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
                   <h4 className="font-medium text-gray-800 mb-2">Managing Diabetes: A Comprehensive Guide</h4>
                   <p className="text-sm text-gray-600 mb-3">Tips and strategies for controlling blood sugar levels and preventing complications.</p>
-                  <a href="#" className="text-sm font-medium text-health-primary hover:text-health-secondary">Read More →</a>
+                  <a href="https://www.mayoclinic.org/diseases-conditions/diabetes/in-depth/diabetes-management/art-20047963" className="text-sm font-medium text-health-primary hover:text-health-secondary">Read More →</a>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
                   <h4 className="font-medium text-gray-800 mb-2">Mental Wellness in Modern Times</h4>
                   <p className="text-sm text-gray-600 mb-3">Practical approaches to maintaining good mental health in a fast-paced world.</p>
-                  <a href="#" className="text-sm font-medium text-health-primary hover:text-health-secondary">Read More →</a>
+                  <a href="https://www.who.int/health-topics/mental-health#tab=tab_1" className="text-sm font-medium text-health-primary hover:text-health-secondary">Read More →</a>
                 </div>
               </div>
             </div>

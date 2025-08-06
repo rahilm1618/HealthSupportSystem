@@ -52,10 +52,19 @@ export const transformMongoHospital = (mongoHospital: MongoHospital): Hospital =
 
 // Helper function to transform MongoDB doctor to frontend Doctor format
 export const transformMongoDoctor = (mongoDoctor: MongoDoctor): Doctor => {
-  // Handle the _id field which could be in different formats
-  const id = typeof mongoDoctor._id === 'string' 
-    ? mongoDoctor._id 
-    : (mongoDoctor._id as any).$oid || mongoDoctor._id.toString();
+  // Handle the _id field which could be in different formats or missing
+  let id = null;
+  if (mongoDoctor._id) {
+    if (typeof mongoDoctor._id === 'string') {
+      id = mongoDoctor._id;
+    } else if (typeof mongoDoctor._id === 'object' && mongoDoctor._id !== null && '$oid' in mongoDoctor._id) {
+      id = (mongoDoctor._id as any).$oid;
+    } else {
+      id = mongoDoctor._id.toString();
+    }
+  } else {
+    id = null;
+  }
 
   // Handle hospital_id field which could be in different formats
   let hospitalId = 'unknown';
