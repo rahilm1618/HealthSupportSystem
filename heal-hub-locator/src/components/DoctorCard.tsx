@@ -17,6 +17,10 @@ const DoctorCard = ({ doctor, hospitalName }: DoctorCardProps) => {
   // Always use the same image for every doctor
   const imageUrl = '/06b185e5b2322f1ab0557db59b554cd5.jpg'; 
 
+  // Debug: log doctor object to check rating
+  console.log('DoctorCard doctor:', doctor);
+  console.log('DoctorCard doctor.rating:', doctor.rating, typeof doctor.rating);
+
   return (
     <Card className="h-full overflow-hidden hover:shadow-md transition-shadow duration-200">
       <div className="flex flex-col md:flex-row">
@@ -41,7 +45,7 @@ const DoctorCard = ({ doctor, hospitalName }: DoctorCardProps) => {
           <CardContent className="pt-4 flex-1">
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-semibold text-lg text-gray-900">{doctor.name}</h3>
-              {doctor.rating !== undefined && (
+              {doctor.rating !== undefined && doctor.rating !== null && doctor.rating > 0 && (
                 <div className="flex items-center text-amber-500">
                   <Star className="fill-amber-500 h-4 w-4" />
                   <span className="ml-1 text-sm font-medium">{doctor.rating.toFixed(1)}</span>

@@ -56,7 +56,7 @@ export const transformMongoDoctor = (mongoDoctor: MongoDoctor): Doctor => {
   const id = typeof mongoDoctor._id === 'string' 
     ? mongoDoctor._id 
     : (mongoDoctor._id as any).$oid || mongoDoctor._id.toString();
-  
+
   // Handle hospital_id field which could be in different formats
   let hospitalId = 'unknown';
   if (mongoDoctor.hospital_id) {
@@ -64,23 +64,45 @@ export const transformMongoDoctor = (mongoDoctor: MongoDoctor): Doctor => {
       ? mongoDoctor.hospital_id
       : (mongoDoctor.hospital_id as any).$oid || mongoDoctor.hospital_id.toString();
   }
-  
+
+  // Debug: log raw doctor object
+  console.log('transformMongoDoctor raw:', mongoDoctor);
+
   // Correctly handle doctor_rating field to preserve decimal values
   let rating = undefined;
   if (mongoDoctor.doctor_rating !== undefined) {
+    console.log('Found doctor_rating:', mongoDoctor.doctor_rating, typeof mongoDoctor.doctor_rating);
     if (typeof mongoDoctor.doctor_rating === 'number') {
       rating = mongoDoctor.doctor_rating;
+      console.log('Set rating from number:', rating);
     } else if (typeof mongoDoctor.doctor_rating === 'object') {
       if ('$numberDecimal' in mongoDoctor.doctor_rating) {
         rating = parseFloat(mongoDoctor.doctor_rating.$numberDecimal);
+        console.log('Set rating from $numberDecimal:', rating);
       } else if ('$numberDouble' in mongoDoctor.doctor_rating) {
         rating = parseFloat((mongoDoctor.doctor_rating as any).$numberDouble);
+        console.log('Set rating from $numberDouble:', rating);
       } else {
         console.log('Unexpected doctor_rating format:', mongoDoctor.doctor_rating);
       }
     }
+  } else if ((mongoDoctor as any).rating !== undefined && (mongoDoctor as any).rating > 0) {
+    // Fallback: if doctor_rating is missing but rating is present and valid (from API or other source)
+    rating = (mongoDoctor as any).rating;
+    console.log('Set rating from fallback:', rating);
+  } else {
+    // Check if the object has doctor_rating field under a different name
+    const docRating = (mongoDoctor as any).doctor_rating || (mongoDoctor as any).doctorRating;
+    if (docRating !== undefined) {
+      if (typeof docRating === 'number') {
+        rating = docRating;
+        console.log('Set rating from alternate field:', rating);
+      }
+    }
   }
-  
+
+  console.log('Final rating before return:', rating);
+
   // Use image_url from MongoDoctor if available, else fallback to image or default
   const imageUrl = mongoDoctor.image_url || mongoDoctor.image || "/doctor.png";
 

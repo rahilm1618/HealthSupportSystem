@@ -158,9 +158,12 @@ export const getDoctors = async (params?: {
     }
     
     return response.data.map((doctor: any) => {
-      if (doctor.id) {
+      console.log('Raw doctor from getDoctors API:', doctor);
+      if (doctor.id && doctor.rating !== undefined && doctor.rating > 0) {
+        // Already in frontend format with valid rating
         return doctor;
       } else {
+        // MongoDB format needs transformation, or has invalid rating
         return transformMongoDoctor(doctor as MongoDoctor);
       }
     });
@@ -183,9 +186,12 @@ export const getDoctorsByHospital = async (hospitalId: string): Promise<Doctor[]
     }
     
     return response.data.map((doctor: any) => {
-      if (doctor.id) {
+      console.log('Raw doctor from API:', doctor);
+      if (doctor.id && doctor.rating !== undefined && doctor.rating > 0) {
+        // Already in frontend format with valid rating
         return doctor;
       } else {
+        // MongoDB format needs transformation, or has invalid rating
         return transformMongoDoctor(doctor as MongoDoctor);
       }
     });
