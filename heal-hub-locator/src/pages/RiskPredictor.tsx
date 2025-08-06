@@ -327,7 +327,7 @@ export default function PredictorForm() {
           <div className="mt-8 p-6 border-2 border-blue-200 rounded-2xl bg-blue-50 text-center shadow">
             <div className="text-2xl font-bold mb-2 text-blue-800">{result.prediction}</div>
             <div className="mb-2 text-blue-700 font-medium">Advice: {result.advice}</div>
-            <div className="mb-2 text-green-700 font-medium">Confidence: {result.confidence}</div>
+            <div className="mb-2 text-green-700 font-medium">Confidence: {result.confidence} This is the model's confidence in its prediction.</div>
           </div>
         )}
       </div>
